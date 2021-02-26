@@ -35,14 +35,14 @@ Bit 0 /
 
 		"P9.27",	/*QEP_0B*/
 		"P9.41",	/*MOT_STBY*/
-		"P9.42",	/*QEP_0A*/
+		"P9.42";	/*QEP_0A*/
 
-		"pruss",
+	/*	"pruss",
 		"pru0",
 		"eqep0",
 		"eqep1",
 		"eqep2",
-		"tscadc";
+		"tscadc";*/
 
 	/*
 	 * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
@@ -106,7 +106,7 @@ fragment@2 {
 
 
 /****************************************
- 		PWMSS
+ 		Encoders
 ****************************************/
 fragment@9 {
 	target = <&eqep0>;
@@ -159,7 +159,7 @@ fragment@31 {
 	};
 };
 
-
+/*
  fragment@34 {
 	target = <&ocp>;
 	__overlay__ {
@@ -228,5 +228,5 @@ fragment@31 {
 			};
 		};
 	};
- };
+ };*/
 };
