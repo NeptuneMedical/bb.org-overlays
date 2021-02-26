@@ -1,0 +1,232 @@
+/*
+ * Device Tree Overlay for Robotics Cape SD-101D
+ * Strawson Design 2015
+ *
+ */
+
+/*
+pinmux control byte map courtesy of http://beaglebone.cameon.net/
+Bit 5: 1 - Input, 0 - Output
+Bit 4: 1 - Pull up, 0 - Pull down
+Bit 3: 1 - Pull disabled, 0 - Pull enabled
+Bit 2 \
+Bit 1 |- Mode
+Bit 0 /
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "ti,beaglebone-black";
+
+    /* identification */
+    part-number = "NeptuneCape";
+
+    /* version */
+    version = "00A0";
+
+	exclusive-use =
+		"P8.11",	/*QEP_2B*/
+		"P8.12",	/*QEP_2A*/
+		"P8.16",	/*PRU_ENCODER_A*/
+		"P8.33",	/*QEP_1B*/
+		"P8.35",	/*QEP_1A*/
+
+		"P9.27",	/*QEP_0B*/
+		"P9.41",	/*MOT_STBY*/
+		"P9.42",	/*QEP_0A*/
+
+		"pruss",
+		"pru0",
+		"eqep0",
+		"eqep1",
+		"eqep2",
+		"tscadc";
+
+	/*
+	 * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
+	 */
+	fragment@0 {
+		target-path="/";
+		__overlay__ {
+
+			chosen {
+				overlays {
+					NeptuneCape-00A0 = __TIMESTAMP__;
+				};
+			};
+		};
+	};
+
+
+fragment@1 {
+	target = <&am33xx_pinmux>;
+	__overlay__ {
+		/****************************************
+		* 			pinmux helper
+		****************************************/
+		mux_helper_pins: pins {
+			pinctrl-single,pins = <
+
+
+			/* EQEP */
+			0x1A0 0x31  /* P9_42,EQEP0A, MODE1 */
+			0x1A4 0x31  /* P9_27,EQEP0B, MODE1 */
+			0x0D4 0x32  /* P8_33,EQEP1B, MODE2 */
+			0x0D0 0x32  /* P8_35,EQEP1A, MODE2 */
+			0x030 0x34  /* P8_12,EQEP2A_in, MODE4 */
+			0x034 0x34  /* P8_11,EQEP2B_in, MODE4 */
+
+			/* PRU encoder input */
+			0x03c 0x36	/* P8_15,PRU0_r31_15,MODE6 */
+			0x1ac 0x36	/* P9_25,PRU0_r31_7,MODE6 */
+
+			>;
+		};
+
+	};
+};
+
+/****************************************
+	Pinmux Helper
+	activates the pinmux helper list of pin modes
+****************************************/
+fragment@2 {
+	target = <&ocp>;
+		__overlay__ {
+			test_helper: helper {
+			compatible = "bone-pinmux-helper";
+			pinctrl-names = "default";
+			pinctrl-0 = <&mux_helper_pins>;
+			status = "okay";
+		};
+	};
+};
+
+
+/****************************************
+ 		PWMSS
+****************************************/
+fragment@9 {
+	target = <&eqep0>;
+	__overlay__ {
+		count_mode = <0>;  /* 0 - Quadrature mode, normal 90 phase offset cha & chb.  1 - Direction mode.  cha input = clock, chb input = direction */
+		swap_inputs = <0>; /* Are channel A and channel B swapped? (0 - no, 1 - yes) */
+		invert_qa = <1>;   /* Should we invert the channel A input?  */
+		invert_qb = <1>;   /* Should we invert the channel B input? I invert these because my encoder outputs drive transistors that pull down the pins */
+		invert_qi = <0>;   /* Should we invert the index input? */
+		invert_qs = <0>;   /* Should we invert the strobe input? */
+
+		status = "okay";
+	};
+};
+
+fragment@10 {
+	target = <&eqep1>;
+	__overlay__ {
+		count_mode = <0>;  /* 0 - Quadrature mode, normal 90 phase offset cha & chb.  1 - Direction mode.  cha input = clock, chb input = direction */
+		swap_inputs = <0>; /* Are channel A and channel B swapped? (0 - no, 1 - yes) */
+		invert_qa = <1>;   /* Should we invert the channel A input?  */
+		invert_qb = <1>;   /* Should we invert the channel B input? I invert these because my encoder outputs drive transistors that pull down the pins */
+		invert_qi = <0>;   /* Should we invert the index input? */
+		invert_qs = <0>;   /* Should we invert the strobe input? */
+		status = "okay";
+	};
+};
+
+fragment@11 {
+	target = <&eqep2>;
+	__overlay__ {
+		count_mode = <0>;  /* 0 - Quadrature mode, normal 90 phase offset cha & chb.  1 - Direction mode.  cha input = clock, chb input = direction */
+		swap_inputs = <0>; /* Are channel A and channel B swapped? (0 - no, 1 - yes) */
+		invert_qa = <1>;   /* Should we invert the channel A input?  */
+		invert_qb = <1>;   /* Should we invert the channel B input? I invert these because my encoder outputs drive transistors that pull down the pins */
+		invert_qi = <0>;   /* Should we invert the index input? */
+		invert_qs = <0>;   /* Should we invert the strobe input? */
+		status = "okay";
+	};
+};
+
+
+/****************************************
+ 		PRU
+****************************************/
+fragment@31 {
+	target = <&pruss>;
+	__overlay__ {
+		status = "okay";
+	};
+};
+
+
+ fragment@34 {
+	target = <&ocp>;
+	__overlay__ {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		pruss: pruss@4a300000 {
+			status = "okay";
+			compatible = "ti,am3352-pruss";
+			ti,hwmods = "pruss";
+			reg = <0x4a300000 0x2000>,
+			      <0x4a302000 0x2000>,
+			      <0x4a310000 0x3000>,
+			      <0x4a326000 0x2000>,
+			      <0x4a32e000 0x31c>,
+			      <0x4a332000 0x58>;
+			reg-names = "dram0", "dram1", "shrdram2", "cfg",
+				    "iep", "mii_rt";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+
+			pruss_intc: intc@4a320000 {
+				compatible = "ti,am3352-pruss-intc";
+				reg = <0x4a320000 0x2000>;
+				reg-names = "intc";
+				interrupts = <20 21 22 23 24 25 26 27>;
+				interrupt-names = "host2", "host3", "host4",
+						  "host5", "host6", "host7",
+						  "host8", "host9";
+				interrupt-controller;
+				#interrupt-cells = <1>;
+			};
+
+			pru0: pru0@4a334000 {
+				compatible = "ti,am3352-pru";
+				reg = <0x4a334000 0x2000>,
+				      <0x4a322000 0x400>,
+				      <0x4a322400 0x100>;
+				reg-names = "iram", "control", "debug";
+				interrupt-parent = <&pruss_intc>;
+				interrupts = <16>, <17>;
+				interrupt-names = "vring", "kick";
+			};
+
+			pru1: pru1@4a338000 {
+				compatible = "ti,am3352-pru";
+				reg = <0x4a338000 0x2000>,
+				      <0x4a324000 0x400>,
+				      <0x4a324400 0x100>;
+				reg-names = "iram", "control", "debug";
+				interrupt-parent = <&pruss_intc>;
+				interrupts = <18>, <19>;
+				interrupt-names = "vring", "kick";
+			};
+
+			pruss_mdio: mdio@4a332400 {
+				compatible = "ti,davinci_mdio";
+				reg = <0x4a332400 0x90>;
+				clocks = <&dpll_core_m4_ck>;
+				clock-names = "fck";
+				bus_freq = <1000000>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
+		};
+	};
+ };
+};
