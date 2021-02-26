@@ -1,0 +1,171 @@
+/*
+ * Device Tree Overlay for Custom Cape (Motor Cape + 4x Encoders)
+ * using the Robot Control Library.
+ *
+ * Derived from RoboticsCape-00A0.dts and BBORG_MOTOR-00A2.dts
+ */
+
+/*
+pinmux control byte map courtesy of http://beaglebone.cameon.net/
+Bit 5: 1 - Input, 0 - Output
+Bit 4: 1 - Pull up, 0 - Pull down
+Bit 3: 1 - Pull disabled, 0 - Pull enabled
+Bit 2 \
+Bit 1 |- Mode
+Bit 0 /
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "ti,beaglebone-black";
+
+    /* identification */
+    part-number = "NeptuneCape";
+
+    /* version */
+    version = "00A0";
+
+    exclusive-use =
+        "P8.11",	/*QEP_2B*/
+        "P8.12",	/*QEP_2A*/
+        "P8.16",	/*PRU_ENCODER_A*/
+        "P8.33",	/*QEP_1B*/
+        "P8.35",	/*QEP_1A*/
+
+        "P9.27",	/*QEP_0B*/
+        "P9.41",	/*MOT_STBY*/
+        "P9.42";	/*QEP_0A*/
+
+    /****************************************
+     * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
+    ****************************************/
+    fragment@0 {
+        target-path="/";
+        __overlay__ {
+
+            chosen {
+                overlays {
+                    NeptuneCape-00A0 = __TIMESTAMP__;
+                };
+            };
+        };
+    };
+
+    /****************************************
+    * 			pinmux helper
+    ****************************************/
+    fragment@1 {
+        target = <&am33xx_pinmux>;
+        __overlay__ {
+            mux_helper_pins: pins {
+                pinctrl-single,pins = <
+
+
+                /* EQEP */
+                0x1A0 0x31  /* P9_42,EQEP0A, MODE1 */
+                0x1A4 0x31  /* P9_27,EQEP0B, MODE1 */
+                0x0D4 0x32  /* P8_33,EQEP1B, MODE2 */
+                0x0D0 0x32  /* P8_35,EQEP1A, MODE2 */
+                0x030 0x34  /* P8_12,EQEP2A_in, MODE4 */
+                0x034 0x34  /* P8_11,EQEP2B_in, MODE4 */
+
+                /* PRU encoder input */
+                0x03c 0x36	/* P8_15,PRU0_r31_15,MODE6 */
+                0x1ac 0x36	/* P9_25,PRU0_r31_7,MODE6 */
+
+                >;
+            };
+
+        };
+    };
+
+    /****************************************
+        Pinmux Helper
+        activates the pinmux helper list of pin modes
+    ****************************************/
+    fragment@2 {
+        target = <&ocp>;
+            __overlay__ {
+                test_helper: helper {
+                compatible = "bone-pinmux-helper";
+                pinctrl-names = "default";
+                pinctrl-0 = <&mux_helper_pins>;
+                status = "okay";
+            };
+        };
+    };
+
+
+    /****************************************
+     Free up the pins used by the cape from the pinmux helpers.
+    ****************************************/
+    fragment@3 {
+        target = <&ocp>;
+        __overlay__ {
+            P8_11_pinmux { status = "disabled"; };	/* enc3b */
+            P8_12_pinmux { status = "disabled"; };	/* enc3a */
+            P8_15_pinmux { status = "disabled"; };  /* enc4b */
+            P8_33_pinmux { status = "disabled"; };  /* enc0  */
+            P8_35_pinmux { status = "disabled"; };  /* enc0  */
+            P9_25_pinmux { status = "disabled"; };  /* enc4a */
+            P9_27_pinmux { status = "disabled"; };	/* enc1b */
+            P9_92_pinmux { status = "disabled"; };	/* enc1a */
+        };
+    };
+
+    /****************************************
+            Encoders
+    ****************************************/
+    fragment@9 {
+        target = <&eqep0>;
+        __overlay__ {
+            count_mode = <0>;  /* 0 - Quadrature mode, normal 90 phase offset cha & chb.  1 - Direction mode.  cha input = clock, chb input = direction */
+            swap_inputs = <0>; /* Are channel A and channel B swapped? (0 - no, 1 - yes) */
+            invert_qa = <1>;   /* Should we invert the channel A input?  */
+            invert_qb = <1>;   /* Should we invert the channel B input? I invert these because my encoder outputs drive transistors that pull down the pins */
+            invert_qi = <0>;   /* Should we invert the index input? */
+            invert_qs = <0>;   /* Should we invert the strobe input? */
+
+            status = "okay";
+        };
+    };
+
+    fragment@10 {
+        target = <&eqep1>;
+        __overlay__ {
+            count_mode = <0>;  /* 0 - Quadrature mode, normal 90 phase offset cha & chb.  1 - Direction mode.  cha input = clock, chb input = direction */
+            swap_inputs = <0>; /* Are channel A and channel B swapped? (0 - no, 1 - yes) */
+            invert_qa = <1>;   /* Should we invert the channel A input?  */
+            invert_qb = <1>;   /* Should we invert the channel B input? I invert these because my encoder outputs drive transistors that pull down the pins */
+            invert_qi = <0>;   /* Should we invert the index input? */
+            invert_qs = <0>;   /* Should we invert the strobe input? */
+            status = "okay";
+        };
+    };
+
+    fragment@11 {
+        target = <&eqep2>;
+        __overlay__ {
+            count_mode = <0>;  /* 0 - Quadrature mode, normal 90 phase offset cha & chb.  1 - Direction mode.  cha input = clock, chb input = direction */
+            swap_inputs = <0>; /* Are channel A and channel B swapped? (0 - no, 1 - yes) */
+            invert_qa = <1>;   /* Should we invert the channel A input?  */
+            invert_qb = <1>;   /* Should we invert the channel B input? I invert these because my encoder outputs drive transistors that pull down the pins */
+            invert_qi = <0>;   /* Should we invert the index input? */
+            invert_qs = <0>;   /* Should we invert the strobe input? */
+            status = "okay";
+        };
+    };
+
+    /****************************************
+            PRU
+    ****************************************/
+    fragment@31 {
+        target = <&pruss>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+
+};
