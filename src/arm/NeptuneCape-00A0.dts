@@ -60,6 +60,7 @@ Bit 0 /
 	};
 
 
+
 fragment@1 {
 	target = <&am33xx_pinmux>;
 	__overlay__ {
@@ -104,6 +105,23 @@ fragment@2 {
 	};
 };
 
+
+	/*
+	 * Free up the pins used by the cape from the pinmux helpers.
+	 */
+	fragment@3 {
+		target = <&ocp>;
+		__overlay__ {
+			P8_11_pinmux { status = "disabled"; };	/* enc3b */
+			P8_12_pinmux { status = "disabled"; };	/* enc3a */
+			P8_15_pinmux { status = "disabled"; };  /* enc4b */
+			P8_33_pinmux { status = "disabled"; };  /* enc0  */
+			P8_35_pinmux { status = "disabled"; };  /* enc0  */
+			P9_25_pinmux { status = "disabled"; };  /* enc4a */
+			P9_27_pinmux { status = "disabled"; };	/* enc1b */
+			P9_92_pinmux { status = "disabled"; };	/* enc1a */
+		};
+	};
 
 /****************************************
  		Encoders
